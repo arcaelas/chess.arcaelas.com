@@ -2,7 +2,7 @@
 // Exposes convenient methods for the UI layer.
 
 // Usamos unpkg CDN para cargar chess.js
-import { Chess as ChessLib } from 'https://cdn.jsdelivr.net/npm/chess.js@latest/dist/cjs/chess.js'; // Versión 1.4.0
+import { Chess as ChessLib } from 'https://cdn.jsdelivr.net/npm/chess.js@latest/dist/esm/chess.js'; // Versión 1.4.0
 
 /**
  * Clase Chess
