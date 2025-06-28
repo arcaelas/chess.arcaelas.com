@@ -1,0 +1,29 @@
+{
+  "name": "windsurf-project",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "chess.test.js",
+  "scripts": {
+    "test": "jest",
+    "serve": "yarn http-server -p 8080 -c-1",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "autoprefixer": "^10.4.21",
+    "babel-jest": "^30.0.2",
+    "http-server": "^14.1.1",
+    "jest": "^30.0.3",
+    "jest-environment-jsdom": "^30.0.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11"
+  }
+}
