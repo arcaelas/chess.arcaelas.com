@@ -1,8 +1,8 @@
 // Chess engine wrapper using chess.js library
 // Exposes convenient methods for the UI layer.
 
-// Usamos jsDelivr CDN para cargar chess.js
-import { Chess as ChessLib } from 'https://cdn.jsdelivr.net/npm/chess.js@1.0.0/dist/chess.min.js'; // Versión minificada
+// Usamos unpkg CDN para cargar chess.js
+import { Chess as ChessLib } from 'https://unpkg.com/chess.js@1.4.0/dist/cjs/chess.js'; // Versión 1.4.0
 
 /**
  * Clase Chess
