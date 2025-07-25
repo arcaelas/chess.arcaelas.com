@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirigiendo...</title>
+    <script>
+        const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+        const newUrl = window.location.origin + basePath + '/index.html' + window.location.search + window.location.hash;
+        window.location.href = newUrl;
+    </script>
+</head>
+<body>
+    <p>Redirigiendo a la página principal...</p>
+    <p>Si no eres redirigido automáticamente, <a href="/">haz clic aquí</a>.</p>
+</body>
+</html>

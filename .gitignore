@@ -1,0 +1,167 @@
+# Dependencias
+/node_modules
+/.pnp
+.pnp.js
+
+# Archivos de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de configuración de IDEs y editores
+/.idea
+/.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Directorios de compilación
+/dist
+/build
+/.cache
+
+# Archivos de configuración local
+*.local
+
+# Archivos de depuración
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de cobertura de pruebas
+/coverage
+
+# Archivos de caché de npm y yarn
+.npm
+.eslintcache
+
+# Archivos de configuración de paquetes
+package-lock.json
+yarn.lock
+
+# Archivos de entorno de desarrollo local
+.env.development
+.env.test
+
+# Archivos de configuración de Vite
+.vite
+.vitepress/cache
+
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de TypeScript
+*.tsbuildinfo
+
+# Archivos de configuración de VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Archivos de configuración de JetBrains
+.idea/*
+!.idea/codeStyles
+
+# Archivos de configuración de Prettier
+.prettierrc
+.prettierignore
+
+# Archivos de configuración de ESLint
+.eslintrc.js
+.eslintignore
+
+# Archivos de configuración de Stylelint
+.stylelintrc
+.stylelintignore
+
+# Archivos de configuración de Babel
+.babelrc
+babel.config.js
+
+# Archivos de configuración de Webpack
+webpack.config.js
+
+# Archivos de configuración de Vite
+vite.config.js
+
+# Archivos de configuración de TypeScript
+tsconfig.json
+tsconfig.node.json
+
+# Archivos de configuración de Jest
+jest.config.js
+
+# Archivos de configuración de Cypress
+cypress/
+
+# Archivos de configuración de Playwright
+/playwright-report/
+/test-results/
+
+# Archivos de configuración de Puppeteer
+/puppeteer-screenshots/
+
+# Archivos de configuración de Storybook
+/storybook-static/
+
+# Archivos de configuración de Next.js
+/.next/
+/out/
+
+# Archivos de configuración de Nuxt
+/.nuxt/
+/.output/
+
+# Archivos de configuración de Angular
+/dist/
+/.angular/
+
+# Archivos de configuración de React
+/.pnp
+.pnp.js
+
+# Archivos de configuración de Vue
+/dist/
+
+# Archivos de configuración de Svelte
+/build/
+
+# Archivos de configuración de SvelteKit
+/.svelte-kit/
+
+# Archivos de configuración de Astro
+/dist/
+/.astro/
+
+# Archivos de configuración de SolidJS
+/dist/
+
+# Archivos de configuración de Qwik
+/dist/
+
+# Archivos de configuración de SolidStart
+/.solid/
+
+# Archivos de configuración de Qwik City
+/.qwik/
+
+# Archivos de configuración de Svelte 5
+/.svelte/
