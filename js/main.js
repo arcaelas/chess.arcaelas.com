@@ -1,6 +1,7 @@
 import { ChatManager } from '/js/chat.js';
 import Chess from '/js/chess.js';
 import { create_board } from '/js/render.js';
+import { StockfishEngine } from '/js/stockfish_engine.js';
 
 // ==================== CONSTANTES ====================
 const PIECE_NAMES = {
@@ -15,6 +16,23 @@ const chat_input = document.getElementById('chat-input');
 const send_button = document.getElementById('send-button');
 const chat_messages = document.getElementById('chat-messages');
 const board_container = document.querySelector('.chessboard');
+
+// Inicializar Stockfish con callback para ocultar loading
+const stockfish = new StockfishEngine(() => {
+    const loading_screen = document.getElementById('loading-screen');
+    const loading_text = document.getElementById('loading-text');
+
+    if (loading_text) loading_text.textContent = '¡Listo para jugar!';
+
+    if (loading_screen) {
+        setTimeout(() => {
+            loading_screen.style.opacity = '0';
+            setTimeout(() => {
+                loading_screen.style.display = 'none';
+            }, 500);
+        }, 800);
+    }
+});
 
 const ui = create_board(board_container, game, (from, to) => {
     if (game.move(from, to)) ui.render_board();
@@ -53,130 +71,38 @@ game.on('move', (move) => {
 
 game.on('turn', async function (action) {
     if (action.turn !== 'black' || game.in_checkmate()) return;
-    const board_state = game.get_board_with_moves();
 
-    const format_pieces = (color) => board_state
-        .filter(piece => piece.color === color)
-        .sort(() => Math.random() - 0.5)
-        .map(piece => `${PIECE_NAMES[piece.name.toLowerCase()]} (${piece.position}) ${piece.canMove.length ? `se puede mover a: ${piece.canMove.join(', ')}` : "no se puede mover"}`)
-        .join('\n');
+    try {
+        // Obtener posición actual en formato FEN
+        const fen = game.fen();
 
-    const messages = [
-        {
-            role: 'system',
-            content: `
-            Eres un Gran Maestro de ajedrez jugando con las piezas ${action.turn === 'black' ? 'negras' : 'blancas'}.
-            Tu estilo es:
-                - Estratégico y posicional
-                - Defensivo pero contundente en el contraataque
-                - Paciente, buscando siempre la mejor jugada
-                - Analítico, considerando múltiples variantes
-            `
-        },
-        {
-            role: 'user',
-            content: `
-                === ESTADO ACTUAL ===
-                Turno: ${action.turn === 'black' ? 'NEGRAS' : 'BLANCAS'}
-                Jaque: ${game.in_checkmate() ? '¡ES JAQUE MATE!\n' : (
-                    game.in_check() ? '¡ESTÁS EN JAQUE!\n' : 'NO ESTÁ EN JAQUE'
-                )}
+        // Obtener mejor movimiento de Stockfish (depth 15 = ~2500 ELO)
+        const best_move = await stockfish.get_best_move(fen, 15);
 
-                === HISTORIAL DE LA PARTIDA ===
-                ${chat.all().filter(m => m.type === 'info').map(m => m.text).join('\n') || 'Eres el primer movimiento, elige cualquier movimiento disponible.'}
+        // Animación visual de selección de pieza
+        const [file, rank] = best_move.from.split('');
+        const col = 'abcdefgh'.indexOf(file);
+        const row = 8 - parseInt(rank);
+        ui.select_square(row, col);
 
-                === POSICION DE LAS PIEZAS ===
+        // Delay para visualizar el movimiento
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-                OPONENTE (${action.turn === 'black' ? 'BLANCAS' : 'NEGRAS'}):
-                ${format_pieces(game.turn() === 'b' ? 'w' : 'b')}
+        // Ejecutar el movimiento
+        const result = game.move(best_move.from, best_move.to, best_move.promotion);
 
-
-                TUYAS (${action.turn === 'black' ? 'NEGRAS' : 'BLANCAS'}):
-                ${format_pieces(action.turn === 'black' ? 'b' : 'w')}
-            `
-        },
-        {
-            role: 'assistant',
-            content: 'He analizado mi posicion y ya tengo un movimiento listo para mis piezas de color ' + (action.turn === 'black' ? 'NEGRO' : 'BLANCO') + '.'
-        },
-        {
-            role: 'user',
-            content: `
-                Analiza tu posicion cuidadosamente y los movimientos que puedes hacer antes de responder.
-                Considera lo siguiente:
-                    - Seguridad de tu rey
-                    - Actividad de tus piezas
-                    - Posibles tácticas o amenazas luego de jugar.
-                    - No respondas movimientos incorrectos o no disponibles.
-                    - Ya tienes informacion sobre las posiciones de las piezas en el tablero.
-                    - Ya tienes informacion sobre el historial de la partida para que pienses como ha jugado tu oponente en cada movimiento.
-                Responde únicamente con tu movimiento en el formato ORIGEN-DESTINO (ej: E7-E5, O-O, O-O-O).
-
-                Tu respuesta (EJEMPLO: E7-E5):
-            `
+        if (!result) {
+            console.error(`Stockfish sugirió movimiento inválido: ${best_move.from}-${best_move.to}`);
+            return;
         }
-    ];
 
-    let attempts = 0;
-    while (true) {
-        try {
-            const response = await chat.ia(messages).then(e => e.trim().toUpperCase());
+        // Actualizar tablero y limpiar selección
+        ui.render_board();
+        ui.clear_selection();
 
-            if (response === 'O-O') {
-                game.move('e8', 'g8');
-                ui.render_board();
-                return;
-            }
-            if (response === 'O-O-O') {
-                game.move('e8', 'c8');
-                ui.render_board();
-                return;
-            }
-
-            const [from, to] = response.split('-').map(s => s.trim().toLowerCase());
-            if (!from || !to) {
-                throw new Error('Formato inválido. Usa ORIGEN-DESTINO (ej: E7-E5)');
-            }
-
-            const piece = board_state.find(p =>
-                p.position === from &&
-                p.canMove.includes(to) &&
-                p.color === (action.turn === 'white' ? 'w' : 'b')
-            );
-            if (!piece) throw new Error(`No hay una pieza en ${from} que pueda moverse a ${to}`);
-
-            const [file, rank] = from.split('');
-            const col = 'abcdefgh'.indexOf(file);
-            const row = 8 - parseInt(rank);
-            ui.select_square(row, col);
-
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            const result = game.move(from, to);
-            if (!result) throw new Error(`Movimiento inválido: ${from}-${to}`);
-            ui.render_board();
-            ui.clear_selection();
-            break;
-        } catch (error) {
-            attempts++;
-            if (attempts === 1) {
-                messages.push({
-                    role: 'user',
-                    content: `
-                        Tu respuesta genera un error en el juego: ${error.message}
-                        Revisa tu respuesta y vuelve a intentar.
-                    `
-                });
-            } else if (attempts <= 5) {
-                await new Promise(resolve => setTimeout(resolve, attempts * 1000));
-            } else if (attempts <= 10) {
-                await new Promise(resolve => setTimeout(resolve, attempts * 150));
-            } else {
-                game.undo();
-                ui.render_board();
-                break;
-            }
-        }
+    } catch (error) {
+        console.error('Error en turno de Stockfish:', error);
+        chat.create('info', 'Error al calcular movimiento de la IA');
     }
 });
 

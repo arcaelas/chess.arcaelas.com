@@ -12,7 +12,12 @@
   "jest": {
     "testEnvironment": "node"
   },
-  "keywords": ["chess", "ai", "game", "web"],
+  "keywords": [
+    "chess",
+    "ai",
+    "game",
+    "web"
+  ],
   "author": "arcaelas",
   "license": "MIT",
   "description": "Juego de ajedrez en línea con motor integrado, interfaz moderna y asistente IA para análisis de jugadas",
@@ -26,5 +31,8 @@
     "jest-environment-jsdom": "^30.0.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11"
+  },
+  "dependencies": {
+    "stockfish": "^17.1.0"
   }
 }
