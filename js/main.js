@@ -1,75 +1,64 @@
-import { all, create, ia, onMessage } from '/js/chat.js';
+import { ChatManager } from '/js/chat.js';
 import Chess from '/js/chess.js';
-import { createBoard } from '/js/render.js';
+import { create_board } from '/js/render.js';
+
+// ==================== CONSTANTES ====================
+const PIECE_NAMES = {
+    p: 'Peón', r: 'Torre', n: 'Caballo',
+    b: 'Alfil', q: 'Dama', k: 'Rey'
+};
 
 // ==================== INICIALIZACIÓN ====================
-function setFormDisabled(disabled) {
-    if (!chatInput || !sendButton) return;
-    chatInput.disabled = disabled;
-    sendButton.disabled = disabled;
-    const inputWrapper = document.querySelector('.input-wrapper');
-    if (inputWrapper) {
-        inputWrapper.style.opacity = disabled ? '0.7' : '1';
-        inputWrapper.style.cursor = disabled ? 'not-allowed' : 'auto';
+const chat = new ChatManager();
+const game = new Chess();
+const chat_input = document.getElementById('chat-input');
+const send_button = document.getElementById('send-button');
+const chat_messages = document.getElementById('chat-messages');
+const board_container = document.querySelector('.chessboard');
+
+const ui = create_board(board_container, game, (from, to) => {
+    if (game.move(from, to)) ui.render_board();
+});
+
+function set_form_disabled(disabled) {
+    if (!chat_input || !send_button) return;
+    chat_input.disabled = disabled;
+    send_button.disabled = disabled;
+    const input_wrapper = document.querySelector('.input-wrapper');
+    if (input_wrapper) {
+        input_wrapper.style.opacity = disabled ? '0.7' : '1';
+        input_wrapper.style.cursor = disabled ? 'not-allowed' : 'auto';
     }
 }
-
-// Inicializacion de variables
-const game = new Chess();
-const chatInput = document.getElementById('chat-input');
-const sendButton = document.getElementById('send-button');
-const chatMessages = document.getElementById('chat-messages');
-const boardContainer = document.querySelector('.chessboard');
-const ui = createBoard(boardContainer, game, (from, to) => {
-    if (game.move(from, to)) ui.renderBoard();
-});
 
 // Eventos del juego
 game.on('move', (move) => {
     const color = move.color === 'w' ? 'Blancas' : 'Negras';
-    const pieceNames = {
-        p: 'Peón (P)',
-        r: 'Torre (T)',
-        n: 'Caballo (C)',
-        b: 'Alfil (A)',
-        q: 'Dama (D)',
-        k: 'Rey (R)'
-    };
-    const pieceName = pieceNames[move.piece] || 'Pieza';
-    let moveText = `${color} mueven ${pieceName} de ${move.from.toUpperCase()} a ${move.to.toUpperCase()}`;
+    const piece_name = `${PIECE_NAMES[move.piece] || 'Pieza'} (${move.piece.toUpperCase()})`;
+    let move_text = `${color} mueven ${piece_name} de ${move.from.toUpperCase()} a ${move.to.toUpperCase()}`;
     if (move.captured) {
-        const capturedPiece = pieceNames[move.captured] || 'pieza';
-        moveText += ` capturando ${capturedPiece}`;
+        const captured_piece = PIECE_NAMES[move.captured] || 'pieza';
+        move_text += ` capturando ${captured_piece}`;
     }
-    create('info', moveText);
-    if (game.inCheckmate()) {
+    chat.create('info', move_text);
+    if (game.in_checkmate()) {
         const winner = game.turn() === 'w' ? 'Negras' : 'Blancas';
-        create('info', `¡Jaque mate! Ganan las ${winner}`);
-    } else if (game.inCheck()) {
-        create('info', '¡Jaque!');
-    } else if (game.inDraw()) {
-        create('info', '¡Empate!');
+        chat.create('info', `¡Jaque mate! Ganan las ${winner}`);
+    } else if (game.in_check()) {
+        chat.create('info', '¡Jaque!');
+    } else if (game.in_draw()) {
+        chat.create('info', '¡Empate!');
     }
 });
 
-// Eliminamos el manejador de captura ya que ahora lo manejamos en el evento 'move'
-// para mostrar un mensaje más completo que incluya la captura junto con el movimiento
 game.on('turn', async function (action) {
-    if (action.turn !== 'black' || game.inCheckmate()) return;
-    const boardState = game.getBoardWithMoves();
-    const pieceNames = {
-        'p': 'Peón',
-        'r': 'Torre',
-        'n': 'Caballo',
-        'b': 'Alfil',
-        'q': 'Dama',
-        'k': 'Rey'
-    };
-    // Formatear las piezas para el análisis
-    const formatPieces = (color) => boardState
+    if (action.turn !== 'black' || game.in_checkmate()) return;
+    const board_state = game.get_board_with_moves();
+
+    const format_pieces = (color) => board_state
         .filter(piece => piece.color === color)
         .sort(() => Math.random() - 0.5)
-        .map(piece => `${pieceNames[piece.name.toLowerCase()]} (${piece.position}) ${piece.canMove.length ? `se puede mover a: ${piece.canMove.join(', ')}` : "no se puede mover"}`)
+        .map(piece => `${PIECE_NAMES[piece.name.toLowerCase()]} (${piece.position}) ${piece.canMove.length ? `se puede mover a: ${piece.canMove.join(', ')}` : "no se puede mover"}`)
         .join('\n');
 
     const messages = [
@@ -89,21 +78,21 @@ game.on('turn', async function (action) {
             content: `
                 === ESTADO ACTUAL ===
                 Turno: ${action.turn === 'black' ? 'NEGRAS' : 'BLANCAS'}
-                Jaque: ${game.inCheckmate() ? '¡ES JAQUE MATE!\n' : (
-                    game.inCheck() ? '¡ESTÁS EN JAQUE!\n' : 'NO ESTÁ EN JAQUE'
+                Jaque: ${game.in_checkmate() ? '¡ES JAQUE MATE!\n' : (
+                    game.in_check() ? '¡ESTÁS EN JAQUE!\n' : 'NO ESTÁ EN JAQUE'
                 )}
 
                 === HISTORIAL DE LA PARTIDA ===
-                ${all().filter(m => m.type === 'info').map(m => m.text).join('\n') || 'Eres el primer movimiento, elige cualquier movimiento disponible.'}
+                ${chat.all().filter(m => m.type === 'info').map(m => m.text).join('\n') || 'Eres el primer movimiento, elige cualquier movimiento disponible.'}
 
                 === POSICION DE LAS PIEZAS ===
 
                 OPONENTE (${action.turn === 'black' ? 'BLANCAS' : 'NEGRAS'}):
-                ${formatPieces(game.turn() === 'b' ? 'w' : 'b')}
+                ${format_pieces(game.turn() === 'b' ? 'w' : 'b')}
 
 
                 TUYAS (${action.turn === 'black' ? 'NEGRAS' : 'BLANCAS'}):
-                ${formatPieces(action.turn === 'black' ? 'b' : 'w')}
+                ${format_pieces(action.turn === 'black' ? 'b' : 'w')}
             `
         },
         {
@@ -131,28 +120,25 @@ game.on('turn', async function (action) {
     let attempts = 0;
     while (true) {
         try {
-            const response = await ia(messages).then(e => e.trim().toUpperCase());
+            const response = await chat.ia(messages).then(e => e.trim().toUpperCase());
 
-            // Procesar enroques
             if (response === 'O-O') {
                 game.move('e8', 'g8');
-                ui.renderBoard();
+                ui.render_board();
                 return;
             }
             if (response === 'O-O-O') {
                 game.move('e8', 'c8');
-                ui.renderBoard();
+                ui.render_board();
                 return;
             }
 
-            // Validar formato del movimiento
             const [from, to] = response.split('-').map(s => s.trim().toLowerCase());
             if (!from || !to) {
                 throw new Error('Formato inválido. Usa ORIGEN-DESTINO (ej: E7-E5)');
             }
 
-            // Validar pieza y movimiento
-            const piece = boardState.find(p =>
+            const piece = board_state.find(p =>
                 p.position === from &&
                 p.canMove.includes(to) &&
                 p.color === (action.turn === 'white' ? 'w' : 'b')
@@ -162,15 +148,15 @@ game.on('turn', async function (action) {
             const [file, rank] = from.split('');
             const col = 'abcdefgh'.indexOf(file);
             const row = 8 - parseInt(rank);
-            ui.selectSquare(row, col);
+            ui.select_square(row, col);
 
             await new Promise(resolve => setTimeout(resolve, 500));
 
             const result = game.move(from, to);
             if (!result) throw new Error(`Movimiento inválido: ${from}-${to}`);
-            ui.renderBoard();
-            ui.clearSelection();
-            break
+            ui.render_board();
+            ui.clear_selection();
+            break;
         } catch (error) {
             attempts++;
             if (attempts === 1) {
@@ -187,7 +173,7 @@ game.on('turn', async function (action) {
                 await new Promise(resolve => setTimeout(resolve, attempts * 150));
             } else {
                 game.undo();
-                ui.renderBoard();
+                ui.render_board();
                 break;
             }
         }
@@ -195,18 +181,18 @@ game.on('turn', async function (action) {
 });
 
 // Eventos del chat
-onMessage(function (message) {
-    if (!chatMessages || message.type === 'system') return;
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${message.type}`;
+chat.on_message(function (message) {
+    if (!chat_messages || message.type === 'system') return;
+    const message_div = document.createElement('div');
+    message_div.className = `message ${message.type}`;
     if (message.type === 'user') {
-        messageDiv.style.cssText = 'margin-left: auto; max-width: 80%;';
+        message_div.style.cssText = 'margin-left: auto; max-width: 80%;';
     }
     const time = new Date(message.timestamp).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit'
     });
-    messageDiv.innerHTML = `
+    message_div.innerHTML = `
         <div class="message-content">
             <div class="message-text">${message.text}</div>
             ${message.type !== 'info' ? `
@@ -214,41 +200,16 @@ onMessage(function (message) {
             ` : ''}
         </div>
     `;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chat_messages.appendChild(message_div);
+    chat_messages.scrollTop = chat_messages.scrollHeight;
 });
 
-// Función para obtener el estado actual del tablero en notación FEN
-function getBoardState() {
-    return game.fen();
-}
-
-// Función para formatear las piezas y sus movimientos
-function formatPiecesInfo() {
-    const boardState = game.getBoardWithMoves();
-    const formatPieces = (color) => {
-        return boardState
-            .filter(piece => piece.color === color)
-            .map(p => {
-                const pieceName = {
-                    'p': 'Peón', 'r': 'Torre', 'n': 'Caballo',
-                    'b': 'Alfil', 'q': 'Dama', 'k': 'Rey'
-                }[p.name.toLowerCase()] || '?';
-                return `- ${pieceName} en ${p.position}${p.canMove?.length ? ` (${p.canMove.join(', ')})` : ''}`;
-            })
-            .join('\n');
-    };
-
-    return `Piezas blancas:\n${formatPieces('w')}\n\nPiezas negras:\n${formatPieces('b')}`;
-}
-
-onMessage(async function reply(message, times = 0) {
+chat.on_message(async function reply(message, times = 0) {
     if (message.type === 'user') {
         try {
-            setFormDisabled(true);
+            set_form_disabled(true);
 
-            // 1. Personalidad del asistente
-            const systemPrompt = {
+            const system_prompt = {
                 role: "system",
                 content: `Eres un jugador de ajedrez profesional.
                 Eres conciso y estratégico.
@@ -257,51 +218,56 @@ onMessage(async function reply(message, times = 0) {
                 Se objetivo y directo en tus análisis.
                 Eres las piezas negras en esta partida.`
             };
-            // 2. Contexto del tablero
-            const currentTurn = game.turn() === 'white' ? 'blancas' : 'negras';
-            const boardPrompt = {
+
+            const current_turn = game.turn() === 'white' ? 'blancas' : 'negras';
+            const pieces_info = game.get_board_with_moves()
+                .map(p => `- ${PIECE_NAMES[p.name.toLowerCase()] || '?'} en ${p.position}${p.canMove?.length ? ` (${p.canMove.join(', ')})` : ''}`)
+                .join('\n');
+
+            const board_prompt = {
                 role: "user",
-                content: `[ESTADO DEL TABLERO]\nTurno actual: ${currentTurn}\nEres las piezas negras.\n\n${formatPiecesInfo()}\nNotación FEN: ${getBoardState()}`
+                content: `[ESTADO DEL TABLERO]\nTurno actual: ${current_turn}\nEres las piezas negras.\n\n${pieces_info}\nNotación FEN: ${game.fen()}`
             };
-            // 3. Historial de mensajes
-            const chatHistory = all().map(({ type, text }) => ({
+
+            const chat_history = chat.all().map(({ type, text }) => ({
                 role: type === 'user' ? 'user' : 'assistant',
                 content: type === 'info' ? `[Sistema] ${text}` : text
             }));
-            const response = await ia([systemPrompt, ...chatHistory, boardPrompt]);
-            create('assistant', response);
+
+            const response = await chat.ia([system_prompt, ...chat_history, board_prompt]);
+            chat.create('assistant', response);
 
         } catch (error) {
             if (times < 3) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return reply(message, times + 1);
             }
-            create('info', 'No se pudo obtener una respuesta del asistente.');
+            chat.create('info', 'No se pudo obtener una respuesta del asistente.');
         } finally {
-            setFormDisabled(false);
-            chatInput?.focus();
+            set_form_disabled(false);
+            chat_input?.focus();
         }
     }
 });
 
 // Eventos del DOM
 document.addEventListener('DOMContentLoaded', () => {
-    ui.renderBoard();
+    ui.render_board();
 });
-chatInput?.addEventListener('input', () => {
-    chatInput.style.height = 'auto';
-    chatInput.style.height = `${Math.min(chatInput.scrollHeight, 120)}px`;
+chat_input?.addEventListener('input', () => {
+    chat_input.style.height = 'auto';
+    chat_input.style.height = `${Math.min(chat_input.scrollHeight, 120)}px`;
 });
-chatInput?.addEventListener('keydown', (e) => {
+chat_input?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        create('user', chatInput?.value.trim());
-        chatInput.value = '';
-        chatInput.focus();
+        chat.create('user', chat_input?.value.trim());
+        chat_input.value = '';
+        chat_input.focus();
     }
 });
-sendButton?.addEventListener('click', () => {
-    create('user', chatInput?.value.trim());
-    chatInput.value = '';
-    chatInput.focus();
+send_button?.addEventListener('click', () => {
+    chat.create('user', chat_input?.value.trim());
+    chat_input.value = '';
+    chat_input.focus();
 });

@@ -1,45 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <base href="https://chess.arcaelas.com/">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Juego de ajedrez en línea con reglas completas y soporte de jaque mate">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Juego de ajedrez en línea con reglas completas y soporte de jaque mate"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>Chess AI</title>
-    <link rel="stylesheet" href="./css/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="main-content">
-            <div class="game-wrapper">
-                <div class="chessboard" id="chessboard" role="grid" aria-label="Tablero de ajedrez"></div>
-            </div>
-            <div class="right-sidebar">
-                <div class="chat-container">
-                <div id="chat-messages" class="chat-messages" aria-live="polite">
-                </div>
-                <div class="chat-input-container">
-                    <div class="input-wrapper">
-                        <textarea 
-                            id="chat-input" 
-                            placeholder="Escribe un mensaje..."
-                            rows="1"
-                            aria-label="Mensaje de chat"
-                        ></textarea>
-                        <button id="send-button" aria-label="Enviar mensaje">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
+      <div class="main-content">
+        <div class="game-wrapper">
+          <div
+            class="chessboard"
+            id="chessboard"
+            role="grid"
+            aria-label="Tablero de ajedrez"
+          ></div>
         </div>
+        <div class="right-sidebar">
+          <div class="chat-container">
+            <div
+              id="chat-messages"
+              class="chat-messages"
+              aria-live="polite"
+            ></div>
+            <div class="chat-input-container">
+              <div class="input-wrapper">
+                <textarea
+                  id="chat-input"
+                  placeholder="Escribe un mensaje..."
+                  rows="1"
+                  aria-label="Mensaje de chat"
+                ></textarea>
+                <button id="send-button" aria-label="Enviar mensaje">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
     <script type="module" src="./js/main.js"></script>
-</body>
+  </body>
 </html>

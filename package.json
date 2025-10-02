@@ -1,20 +1,21 @@
 {
-  "name": "windsurf-project",
+  "name": "chess-ai-web",
   "version": "1.0.0",
   "type": "module",
-  "main": "chess.test.js",
+  "main": "index.html",
   "scripts": {
     "test": "jest",
     "serve": "yarn http-server -p 8080 -c-1",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "build:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch"
   },
   "jest": {
     "testEnvironment": "node"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["chess", "ai", "game", "web"],
+  "author": "arcaelas",
+  "license": "MIT",
+  "description": "Juego de ajedrez en línea con motor integrado, interfaz moderna y asistente IA para análisis de jugadas",
   "devDependencies": {
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
